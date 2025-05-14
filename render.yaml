@@ -11,7 +11,7 @@ services:
     plan: free
     runtime: image
     image:
-      url: postgres:15
+      url: alpine:latest
     region: singapore
     envVars:
       - key: PGHOST
@@ -35,7 +35,10 @@ services:
           name: pleasanter_db
           property: database
     startCommand: |
-      echo "Configuring database roles and permissions..."
+      apk update && apk add --no-cache postgresql-client
+
+      echo "Waiting for database to be ready..."
+      timeout 30 sh -c 'until pg_isready; do sleep 2; done' || echo "Database connection timed out, but continuing..."
 
       cat > /tmp/init_roles.sql << 'EOF'
       DO $$
@@ -57,6 +60,7 @@ services:
       $$;
       EOF
 
+      echo "Configuring database roles and permissions..."
       psql -f /tmp/init_roles.sql
 
       echo "Database roles and permissions configured successfully"
