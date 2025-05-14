@@ -7,65 +7,6 @@ databases:
 
 services:
   - type: web
-    name: pleasanter-init
-    plan: free
-    runtime: image
-    image:
-      url: alpine:latest
-    region: singapore
-    envVars:
-      - key: PGHOST
-        fromDatabase:
-          name: pleasanter_db
-          property: host
-      - key: PGPORT
-        fromDatabase:
-          name: pleasanter_db
-          property: port
-      - key: PGUSER
-        fromDatabase:
-          name: pleasanter_db
-          property: user
-      - key: PGPASSWORD
-        fromDatabase:
-          name: pleasanter_db
-          property: password
-      - key: PGDATABASE
-        fromDatabase:
-          name: pleasanter_db
-          property: database
-    startCommand: |
-      apk update && apk add --no-cache postgresql-client
-
-      echo "Waiting for database to be ready..."
-      timeout 30 sh -c 'until pg_isready; do sleep 2; done' || echo "Database connection timed out, but continuing..."
-
-      cat > /tmp/init_roles.sql << 'EOF'
-      DO $$
-      BEGIN
-        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'Implem.Pleasanter_Owner') THEN
-          CREATE ROLE "Implem.Pleasanter_Owner" WITH LOGIN PASSWORD 'pleasanterowner';
-        END IF;
-        
-        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'Implem.Pleasanter_User') THEN
-          CREATE ROLE "Implem.Pleasanter_User" WITH LOGIN PASSWORD 'pleasanteruser';
-        END IF;
-        
-        GRANT "Implem.Pleasanter_Owner" TO pleasanter;
-        GRANT "Implem.Pleasanter_User" TO pleasanter;
-        
-        GRANT SET ROLE "Implem.Pleasanter_Owner" TO pleasanter;
-        GRANT SET ROLE "Implem.Pleasanter_User" TO pleasanter;
-      END
-      $$;
-      EOF
-
-      echo "Configuring database roles and permissions..."
-      psql -f /tmp/init_roles.sql
-
-      echo "Database roles and permissions configured successfully"
-
-  - type: web
     name: pleasanter
     plan: free
     runtime: image
@@ -94,6 +35,6 @@ services:
           name: pleasanter_db
           property: database
     startCommand: |
-      export Implem.Pleasanter_Rds_PostgreSQL_SaConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD};SslMode=Require;"
-      export Implem.Pleasanter_Rds_PostgreSQL_OwnerConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD};SslMode=Require;"
-      export Implem.Pleasanter_Rds_PostgreSQL_UserConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD};SslMode=Require;"
+      export Implem.Pleasanter_Rds_PostgreSQL_SaConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD}"
+      export Implem.Pleasanter_Rds_PostgreSQL_OwnerConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_Owner;PWD=${OWNER_PASSWORD}"
+      export Implem.Pleasanter_Rds_PostgreSQL_UserConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_User;PWD=${USER_PASSWORD}"
