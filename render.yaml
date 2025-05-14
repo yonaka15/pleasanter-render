@@ -7,43 +7,59 @@ databases:
 
 services:
   - type: web
-    name: pleasanter-codedefiner
+    name: pleasanter-init
     plan: free
     runtime: image
     image:
-      url: implem/pleasanter:codedefiner
+      url: postgres:15
     region: singapore
     envVars:
-      - key: POSTGRES_HOST
+      - key: PGHOST
         fromDatabase:
           name: pleasanter_db
           property: host
-      - key: POSTGRES_PORT
+      - key: PGPORT
         fromDatabase:
           name: pleasanter_db
           property: port
-      - key: POSTGRES_USER
+      - key: PGUSER
         fromDatabase:
           name: pleasanter_db
           property: user
-      - key: POSTGRES_PASSWORD
+      - key: PGPASSWORD
         fromDatabase:
           name: pleasanter_db
           property: password
-      - key: POSTGRES_DB
+      - key: PGDATABASE
         fromDatabase:
           name: pleasanter_db
           property: database
     startCommand: |
-      export Implem.Pleasanter_Rds_PostgreSQL_SaConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD};SslMode=Require;"
-      export Implem.Pleasanter_Rds_PostgreSQL_OwnerConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD};SslMode=Require;"
-      export Implem.Pleasanter_Rds_PostgreSQL_UserConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD};SslMode=Require;"
+      echo "Configuring database roles and permissions..."
 
-      echo "y" | dotnet /app/CodeDefiner.dll _rds || echo "Failed to run CodeDefiner"
+      cat > /tmp/init_roles.sql << 'EOF'
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'Implem.Pleasanter_Owner') THEN
+          CREATE ROLE "Implem.Pleasanter_Owner" WITH LOGIN PASSWORD 'pleasanterowner';
+        END IF;
+        
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'Implem.Pleasanter_User') THEN
+          CREATE ROLE "Implem.Pleasanter_User" WITH LOGIN PASSWORD 'pleasanteruser';
+        END IF;
+        
+        GRANT "Implem.Pleasanter_Owner" TO pleasanter;
+        GRANT "Implem.Pleasanter_User" TO pleasanter;
+        
+        GRANT SET ROLE "Implem.Pleasanter_Owner" TO pleasanter;
+        GRANT SET ROLE "Implem.Pleasanter_User" TO pleasanter;
+      END
+      $$;
+      EOF
 
-      while true; do
-        sleep 3600
-      done
+      psql -f /tmp/init_roles.sql
+
+      echo "Database roles and permissions configured successfully"
 
   - type: web
     name: pleasanter
@@ -52,7 +68,6 @@ services:
     image:
       url: implem/pleasanter
     region: singapore
-    # codedefinerサービスに依存させる
     envVars:
       - key: POSTGRES_HOST
         fromDatabase:
