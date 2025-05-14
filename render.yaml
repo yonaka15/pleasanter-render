@@ -1,0 +1,74 @@
+databases:
+  - name: pleasanter_db
+    plan: basic-256mb
+    region: singapore
+    databaseName: pleasanter
+    user: pleasanter
+
+services:
+  - type: web
+    name: pleasanter
+    plan: free
+    runtime: image
+    image:
+      url: implem/pleasanter
+    region: singapore
+    envVars:
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: pleasanter_db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: pleasanter_db
+          property: port
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: pleasanter_db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: pleasanter_db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: pleasanter_db
+          property: database
+    startCommand: |
+      # 環境変数を使って接続文字列を構築
+      export Implem_Pleasanter_Rds_PostgreSQL_SaConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD}"
+      export Implem_Pleasanter_Rds_PostgreSQL_OwnerConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_Owner;PWD=${OWNER_PASSWORD}"
+      export Implem_Pleasanter_Rds_PostgreSQL_UserConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_User;PWD=${USER_PASSWORD}"
+  - type: web
+    name: pleasanter-codedefiner
+    plan: free
+    runtime: image
+    image:
+      url: implem/pleasanter:codedefiner
+    region: singapore
+    envVars:
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: pleasanter_db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: pleasanter_db
+          property: port
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: pleasanter_db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: pleasanter_db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: pleasanter_db
+          property: database
+    startCommand: |
+      # 環境変数を使って接続文字列を構築
+      export Implem_Pleasanter_Rds_PostgreSQL_SaConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD}"
+      export Implem_Pleasanter_Rds_PostgreSQL_OwnerConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_Owner;PWD=${OWNER_PASSWORD}"
+      export Implem_Pleasanter_Rds_PostgreSQL_UserConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_User;PWD=${USER_PASSWORD}"
