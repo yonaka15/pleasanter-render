@@ -13,28 +13,3 @@ services:
     image:
       url: implem/pleasanter
     region: singapore
-    envVars:
-      - key: POSTGRES_HOST
-        fromDatabase:
-          name: pleasanter_db
-          property: host
-      - key: POSTGRES_PORT
-        fromDatabase:
-          name: pleasanter_db
-          property: port
-      - key: POSTGRES_USER
-        fromDatabase:
-          name: pleasanter_db
-          property: user
-      - key: POSTGRES_PASSWORD
-        fromDatabase:
-          name: pleasanter_db
-          property: password
-      - key: POSTGRES_DB
-        fromDatabase:
-          name: pleasanter_db
-          property: database
-    startCommand: |
-      export Implem.Pleasanter_Rds_PostgreSQL_SaConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD}"
-      export Implem.Pleasanter_Rds_PostgreSQL_OwnerConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_Owner;PWD=${OWNER_PASSWORD}"
-      export Implem.Pleasanter_Rds_PostgreSQL_UserConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_User;PWD=${USER_PASSWORD}"
