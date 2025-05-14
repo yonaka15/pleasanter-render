@@ -8,7 +8,7 @@ databases:
 services:
   - type: web
     name: pleasanter
-    plan: free
+    plan: basic-256mb
     runtime: image
     image:
       url: implem/pleasanter
