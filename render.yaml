@@ -39,7 +39,7 @@ services:
       export Implem.Pleasanter_Rds_PostgreSQL_OwnerConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD};SslMode=Require;"
       export Implem.Pleasanter_Rds_PostgreSQL_UserConnectionString="Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD};SslMode=Require;"
 
-      dotnet /app/CodeDefiner.dll _rds /l "ja" /z "Asia/Tokyo" /y
+      echo "y" | dotnet /app/CodeDefiner.dll _rds || echo "Failed to run CodeDefiner"
 
       while true; do
         sleep 3600
