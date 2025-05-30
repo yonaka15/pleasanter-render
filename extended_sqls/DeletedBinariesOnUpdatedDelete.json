@@ -1,0 +1,5 @@
+{
+    "Description": "レコード更新後に削除済み添付ファイルをレコードごと消す",
+    "OnUpdated": true,
+    "CommandText": "-- Write an arbitrary SQL statement."
+}

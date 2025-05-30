@@ -9,7 +9,6 @@ services:
   - type: web
     name: pleasanter
     plan: starter
-    runtime: image
-    image:
-      url: implem/pleasanter
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     region: singapore
