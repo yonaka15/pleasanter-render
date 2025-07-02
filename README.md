@@ -1,80 +1,55 @@
-# Pleasanter on Render.com
+# Pleasanter Docker Compose
 
-このプロジェクトは、PleasanterをRender.comにデプロイするためのセットアップです。
+Simple Docker Compose setup for Pleasanter with PostgreSQL.
 
-## 機能
+## Quick Start
 
-- PostgreSQLデータベースの自動セットアップ
-- Pleasanterロール（Owner/User）の自動作成
-- Extended SQLsの自動配置
-- Render.comでの自動デプロイ
+1. **Setup environment**
+   ```bash
+   cp .env.local .env
+   # Edit .env and change POSTGRES_PASSWORD
+   ```
 
-## セットアップ手順
+2. **Start services**
+   ```bash
+   docker compose up -d
+   ```
 
-### 1. 環境変数設定
+3. **Initialize database** (first time only)
+   ```bash
+   docker compose --profile init run --rm codedefiner _rds
+   ```
 
-`.env.template`を参考に`.env`ファイルを作成：
+4. **Access Pleasanter**
+   - URL: http://localhost:8080
+   - Username: Administrator
+   - Password: pleasanter
 
-```bash
-cp .env.template .env
-```
+## Services
 
-必要な環境変数を設定してください：
-- `POSTGRES_HOST`
-- `POSTGRES_PORT`
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `POSTGRES_DB`
-- `OWNER_PASSWORD`
-- `USER_PASSWORD`
+- **postgres**: PostgreSQL database
+- **pleasanter**: Pleasanter web application  
+- **codedefiner**: Database initialization (profile: init)
 
-### 2. データベース初期化
+## Configuration
 
-```bash
-python src/main.py
-```
+Edit `.env` file to customize:
+- `POSTGRES_PASSWORD`: Database password (required)
+- `PLEASANTER_PORT`: Web port (default: 8080)
+- `POSTGRES_PORT`: Database port (default: 5432)
 
-### 3. Pleasanter初期化
-
-```bash
-docker compose -f docker-compose-codedefiner.yaml run --rm codedefiner _rds /l "ja" /z "Asia/Tokyo"
-```
-
-## カスタムDockerイメージ
-
-このプロジェクトでは、`extended_sqls/`フォルダの内容を自動的に`/app/App_Data/Parameters/ExtendedSqls/`にコピーするカスタムDockerイメージを使用します。
-
-### Extended SQLs
-
-`extended_sqls/`フォルダに以下の形式でファイルを配置：
-
-- `*.json` - Extended SQL設定ファイル
-- `*.sql` - SQLクエリファイル
-
-例：
-```
-extended_sqls/
-├── DeletedBinariesOnUpdatedDelete.json
-└── DeletedBinariesOnUpdatedDelete.json.sql
-```
-
-### ローカルビルド（オプション）
+## Commands
 
 ```bash
-docker build -t pleasanter-custom .
-docker run -p 8080:80 pleasanter-custom
+# Start
+docker compose up -d
+
+# Stop
+docker compose down
+
+# View logs
+docker compose logs -f
+
+# Database shell
+docker compose exec postgres psql -U pleasanter
 ```
-
-## デプロイ
-
-Render.comでの自動デプロイは`render.yaml`の設定に基づいて実行されます。
-
-## トラブルシューティング
-
-### データベース接続エラー
-- 環境変数の設定を確認
-- PostgreSQLサーバーの稼働状況を確認
-
-### Extended SQLs が反映されない
-- Dockerビルドが正常に完了しているか確認
-- ファイルパーミッションを確認
