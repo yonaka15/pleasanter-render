@@ -10,5 +10,4 @@ services:
     name: pleasanter
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: basic-256mb
     region: singapore
