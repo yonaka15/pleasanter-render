@@ -1,4 +1,4 @@
 DELETE FROM
-    [Binaries_deleted]
+    "Binaries_deleted"
 WHERE
-    [ReferenceId] = {{Id}}
+    "ReferenceId" = {{Id}}
