@@ -1,5 +1,5 @@
 # Pleasanter with Extended SQLs
-FROM implem/pleasanter:latest
+FROM implem/pleasanter:1.4.17.0
 
 # Copy extended SQLs to the appropriate directory
 # Note: /app is the content root path for Pleasanter
