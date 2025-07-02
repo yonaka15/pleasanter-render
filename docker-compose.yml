@@ -1,0 +1,67 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16
+    container_name: pleasanter_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pleasanter}
+      POSTGRES_USER: ${POSTGRES_USER:-pleasanter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pleasanter}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - pleasanter_network
+
+  # Pleasanter Application
+  pleasanter:
+    image: implem/pleasanter:${PLEASANTER_VERSION:-latest}
+    container_name: pleasanter_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${PLEASANTER_PORT:-8080}:8080"
+    environment:
+      TZ: ${TZ:-Asia/Tokyo}
+      Implem.Pleasanter_Rds_PostgreSQL_SaConnectionString: "Server=postgres;Database=${POSTGRES_DB:-pleasanter};UID=${POSTGRES_USER:-pleasanter};PWD=${POSTGRES_PASSWORD}"
+      Implem.Pleasanter_Rds_PostgreSQL_OwnerConnectionString: "Server=postgres;Database=#ServiceName#;UID=#ServiceName#_Owner;PWD=${OWNER_PASSWORD:-owner123}"
+      Implem.Pleasanter_Rds_PostgreSQL_UserConnectionString: "Server=postgres;Database=#ServiceName#;UID=#ServiceName#_User;PWD=${USER_PASSWORD:-user123}"
+    volumes:
+      - pleasanter_files:/app/Files
+      - pleasanter_logs:/app/Logs
+    networks:
+      - pleasanter_network
+
+  # Database Initialization (run once)
+  codedefiner:
+    image: implem/pleasanter:codedefiner
+    container_name: pleasanter_codedefiner
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ:-Asia/Tokyo}
+      Implem.Pleasanter_Rds_PostgreSQL_SaConnectionString: "Server=postgres;Database=${POSTGRES_DB:-pleasanter};UID=${POSTGRES_USER:-pleasanter};PWD=${POSTGRES_PASSWORD}"
+      Implem.Pleasanter_Rds_PostgreSQL_OwnerConnectionString: "Server=postgres;Database=#ServiceName#;UID=#ServiceName#_Owner;PWD=${OWNER_PASSWORD:-owner123}"
+      Implem.Pleasanter_Rds_PostgreSQL_UserConnectionString: "Server=postgres;Database=#ServiceName#;UID=#ServiceName#_User;PWD=${USER_PASSWORD:-user123}"
+    networks:
+      - pleasanter_network
+    profiles:
+      - init
+
+volumes:
+  postgres_data:
+  pleasanter_files:
+  pleasanter_logs:
+
+networks:
+  pleasanter_network:
