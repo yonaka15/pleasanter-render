@@ -1,8 +1,0 @@
-services:
-  codedefiner:
-    container_name: codedefiner
-    image: implem/pleasanter:codedefiner
-    environment:
-      Implem.Pleasanter_Rds_PostgreSQL_SaConnectionString: Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${POSTGRES_DB};UID=${POSTGRES_USER};PWD=${POSTGRES_PASSWORD}
-      Implem.Pleasanter_Rds_PostgreSQL_OwnerConnectionString: Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_Owner;PWD=${OWNER_PASSWORD}
-      Implem.Pleasanter_Rds_PostgreSQL_UserConnectionString: Server=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=#ServiceName#;UID=#ServiceName#_User;PWD=${USER_PASSWORD}

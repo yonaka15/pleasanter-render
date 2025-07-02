@@ -8,7 +8,7 @@ databases:
 services:
   - type: web
     name: pleasanter
-    plan: starter
     runtime: docker
     dockerfilePath: ./Dockerfile
+    plan: basic-256mb
     region: singapore
