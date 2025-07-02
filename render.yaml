@@ -1,6 +1,6 @@
 databases:
   - name: pleasanter_db
-    plan: basic-256mb
+    plan: basic-1gb
     region: singapore
     databaseName: pleasanter
     user: pleasanter
